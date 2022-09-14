@@ -1,26 +1,27 @@
 from rest_framework import serializers
-from rest_framework import exceptions
 
 from posts.models import Post, Group, Comment
-from .views import PostViewSet, GroupViewSet, CommentViewSet
+
+
+class GroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = '__all__'
+        model = Group
 
 
 class PostSerializer(serializers.ModelSerializer):
-    group = serializers.GroupSerializer(many=False)
+    group = serializers.SlugRelatedField(slug_field='slug',
+                                         queryset=Group.objects.all(),
+                                         required=False)
+    author = serializers.SlugRelatedField(
+        default=serializers.CurrentUserDefault(),
+        slug_field='username',
+        read_only=True)
 
     class Meta:
         fields = ('id', 'text', 'author', 'image', 'pub_date', 'group')
         model = Post
-
-    def perform_update(self, serializer):
-        if serializer.instance.author != self.request.user:
-            raise exceptions.PermissionDenied('Изменение чужого контента запрещено!')
-        super(PostViewSet, self).perform_update(serializer)
-    
-    def perform_destroy(self, serializer):
-        if serializer.instance.author != self.request.user:
-            raise exceptions.PermissionDenied('Изменение чужого контента запрещено!')
-        super(PostViewSet, self).perform_update(serializer)
+        read_only_fields = ('author',)
 
     def create(self, validated_data):
         if 'group' not in self.initial_data:
@@ -33,13 +34,13 @@ class PostSerializer(serializers.ModelSerializer):
         post.group = group
 
 
-class GroupSerializer(serializers.ModelSerializer):
-    class Meta:
-        fields = '__all__'
-        model = Group
-
-
 class CommentSerializer(serializers.ModelSerializer):
+
+    author = serializers.SlugRelatedField(
+        default=serializers.CurrentUserDefault(),
+        slug_field='username',
+        read_only=True)
+
     class Meta:
         fields = '__all__'
         model = Comment
