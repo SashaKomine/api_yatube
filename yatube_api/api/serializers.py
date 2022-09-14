@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from rest_framework import exceptions
+
 from posts.models import Post, Group, Comment
 from .views import PostViewSet, GroupViewSet, CommentViewSet
 
@@ -12,12 +14,12 @@ class PostSerializer(serializers.ModelSerializer):
 
     def perform_update(self, serializer):
         if serializer.instance.author != self.request.user:
-            raise PermissionDenied('Изменение чужого контента запрещено!')
+            raise exceptions.PermissionDenied('Изменение чужого контента запрещено!')
         super(PostViewSet, self).perform_update(serializer)
     
     def perform_destroy(self, serializer):
         if serializer.instance.author != self.request.user:
-            raise PermissionDenied('Изменение чужого контента запрещено!')
+            raise exceptions.PermissionDenied('Изменение чужого контента запрещено!')
         super(PostViewSet, self).perform_update(serializer)
 
     def create(self, validated_data):
@@ -33,7 +35,7 @@ class PostSerializer(serializers.ModelSerializer):
 
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
-        fields = ('title', 'description')
+        fields = '__all__'
         model = Group
 
 
