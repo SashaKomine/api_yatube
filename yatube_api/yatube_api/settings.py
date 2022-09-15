@@ -105,14 +105,14 @@ AUTH_PASSWORD_VALIDATORS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated', 
+        'rest_framework.permissions.IsAuthenticated',
     ],
 
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
     'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler'
-} 
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
