@@ -4,12 +4,14 @@ from posts.models import Post, Group, Comment
 
 
 class GroupSerializer(serializers.ModelSerializer):
+    """Сериализатор для модели Group."""
     class Meta:
         fields = '__all__'
         model = Group
 
 
 class PostSerializer(serializers.ModelSerializer):
+    """Сериализатор для модели Post."""
     group = serializers.SlugRelatedField(slug_field='slug',
                                          queryset=Group.objects.all(),
                                          required=False)
@@ -23,19 +25,9 @@ class PostSerializer(serializers.ModelSerializer):
         model = Post
         read_only_fields = ('author',)
 
-    def create(self, validated_data):
-        if 'group' not in self.initial_data:
-            post = Post.objects.create(**validated_data)
-            return post
-
-        group_data = validated_data.pop('group')
-        group = Group.objects.get_or_create(group_data)
-        post = Post.objects.create(**validated_data)
-        post.group = group
-
 
 class CommentSerializer(serializers.ModelSerializer):
-
+    """Сериализатор для модели Comment."""
     author = serializers.SlugRelatedField(
         default=serializers.CurrentUserDefault(),
         slug_field='username',
