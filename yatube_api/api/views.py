@@ -1,11 +1,12 @@
 from rest_framework import viewsets
-from rest_framework import mixins
 from rest_framework import exceptions
+from rest_framework import permissions
 
 from django.shortcuts import get_object_or_404
 
 from posts.models import Post, Group
 from .serializers import CommentSerializer, PostSerializer, GroupSerializer
+from .permissions import IsAuthorOrReadOnly
 
 
 class PostViewSet(viewsets.ModelViewSet):
@@ -13,7 +14,8 @@ class PostViewSet(viewsets.ModelViewSet):
 
     serializer_class = PostSerializer
     queryset = Post.objects.all()
-    # premissions_class = [IsAuthorOrReadOnly,]
+    premissions_classes = (IsAuthorOrReadOnly, permissions
+                           .IsAuthenticatedOrReadOnly)
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -31,14 +33,7 @@ class PostViewSet(viewsets.ModelViewSet):
         super().perform_destroy(instance)
 
 
-class RetriveListMixins(mixins.RetrieveModelMixin,
-                        mixins.ListModelMixin,
-                        viewsets.GenericViewSet):
-    """Миксинс к для Group модели для доступа GET."""
-    pass
-
-
-class GroupViewSet(RetriveListMixins):
+class GroupViewSet(viewsets.ReadOnlyModelViewSet):
     """Доступ к объектам модели Group."""
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
@@ -52,7 +47,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Получение конкретного объекта модели."""
         post = get_object_or_404(Post, pk=self.kwargs.get('post_id'))
-        return post.comments
+        return post.comments.all()
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
