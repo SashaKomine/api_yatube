@@ -1,5 +1,4 @@
 from rest_framework import viewsets
-from rest_framework import exceptions
 from rest_framework import permissions
 
 from django.shortcuts import get_object_or_404
@@ -14,23 +13,11 @@ class PostViewSet(viewsets.ModelViewSet):
 
     serializer_class = PostSerializer
     queryset = Post.objects.all()
-    premissions_classes = (IsAuthorOrReadOnly, permissions
-                           .IsAuthenticatedOrReadOnly)
+    permission_classes = [
+        permissions.IsAuthenticated, IsAuthorOrReadOnly]
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
-
-    def perform_update(self, serializer_class):
-        if serializer_class.instance.author != self.request.user:
-            raise exceptions.PermissionDenied(
-                'Изменение чужого контента запрещено!')
-        super().perform_update(serializer_class)
-
-    def perform_destroy(self, instance):
-        if instance.author != self.request.user:
-            raise exceptions.PermissionDenied(
-                'Изменение чужого контента запрещено!')
-        super().perform_destroy(instance)
 
 
 class GroupViewSet(viewsets.ReadOnlyModelViewSet):
@@ -43,6 +30,8 @@ class CommentViewSet(viewsets.ModelViewSet):
     """Доступ к объектам модели Comment."""
 
     serializer_class = CommentSerializer
+    permission_classes = [
+        permissions.IsAuthenticated, IsAuthorOrReadOnly]
 
     def get_queryset(self):
         """Получение конкретного объекта модели."""
@@ -51,15 +40,3 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
-
-    def perform_update(self, serializer):
-        if serializer.instance.author != self.request.user:
-            raise exceptions.PermissionDenied(
-                'Изменение чужого контента запрещено!')
-        super().perform_update(serializer)
-
-    def perform_destroy(self, instance):
-        if instance.author != self.request.user:
-            raise exceptions.PermissionDenied(
-                'Изменение чужого контента запрещено!')
-        super().perform_destroy(instance)
